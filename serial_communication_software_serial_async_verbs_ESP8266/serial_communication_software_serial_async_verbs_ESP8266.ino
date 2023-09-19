@@ -3,7 +3,7 @@
 #include <ESP8266WiFi.h>
 #include <ESPAsyncWebServer.h>
 
-volatile char actualTemperature;
+String actualTemperature;
 
 ////////////////conexion serial//////////////
 //D6 = Rx & D5 = Tx
@@ -57,8 +57,7 @@ void loop() {
     char data = arduinoSerial.read();
     Serial.print(data);
 
-    actualTemperature = data; // PROBAR que llega
-    // ver dentro del string si esta la temperatura
+    actualTemperature = data; // guardamos la temperatura
   }
   
   digitalWrite(ledPin, LOW); //apagamos el led

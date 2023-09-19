@@ -9,7 +9,6 @@ void handleFormLed(AsyncWebServerRequest *request)
   
   AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Hello World!");
   response->addHeader("Server","ESP Async Web Server");
-  response->addHeader("Agradecimientos","a Pelozo");
   request->send(response);
   
   request->redirect("/");
@@ -25,22 +24,14 @@ void handleProof(AsyncWebServerRequest *request)
 void getTemperature(AsyncWebServerRequest *request){
 
   Serial.println("Recuperando temperatura actual:\t");
+  Serial.println(actualTemperature);
 
-  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", "Temperatura actual!");
-  response->addHeader("Temperatura actual ", (String)actualTemperature);
+  AsyncWebServerResponse *response = request->beginResponse(200, "text/plain", actualTemperature);
+  //response->addHeader("Temperatura actual ", (String)actualTemperature);
 
   request->send(response);
   
-  request->redirect("/");  
-
-  // se puede acceder desde aca al arduino UNO ?
-  // hacer una clase con tempActual, maxima y minima o variable global ?
-
-  // si es una variable global se guarda desde el main y la devolvemos en la response desde aca
-
-  //ver tema temp maxima y minima
-
-  
+  request->redirect("/");    
 }
 
 void initServer()
