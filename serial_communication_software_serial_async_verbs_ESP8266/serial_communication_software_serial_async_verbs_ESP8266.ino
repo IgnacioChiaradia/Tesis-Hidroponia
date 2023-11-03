@@ -32,8 +32,8 @@ AsyncWebServer server(5009);
 const int ledPin = 2;
 
 void setup() {  
-  Serial.begin(9600); // Configura la comunicación serial a 9600 baudios
-  arduinoSerial.begin(9600);
+  Serial.begin(9600); // Configura la comunicación serial a 9600 baudios e iniciamos el puerto del ESP8266
+  arduinoSerial.begin(9600); // Iniciamos el puerto virtual para la comunicación con el arduino UNO
 
   pinMode(ledPin, OUTPUT);
 
@@ -54,14 +54,23 @@ void loop() {
   while(arduinoSerial.available()) {
     Serial.println("entrando en el while");
     
-    char data = arduinoSerial.read();
-    Serial.print(data);
+    String data = arduinoSerial.readString();
+    Serial.println(data);
 
-    actualTemperature = data; // guardamos la temperatura
-  }
+    actualTemperature = data; // PROBAR que llega
+    // ver dentro del string si esta la temperatura
+
+    temperatureSensor.set(data);
+
+    int separatorIndex = data.indexOf('Tienequellegar');
+    if (separatorIndex != -1) {
+      Serial.println("esta llegando");        
+    }
+
+  }    
   
-  digitalWrite(ledPin, LOW); //apagamos el led
-  delay(1000);   
-  digitalWrite(ledPin, HIGH); //encedemos el led
+  //digitalWrite(ledPin, LOW); //apagamos el led
+  //delay(5000);   
+  //digitalWrite(ledPin, HIGH); //encedemos el led
   delay(2000); 
 }
