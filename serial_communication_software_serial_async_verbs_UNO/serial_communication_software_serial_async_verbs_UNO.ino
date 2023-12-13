@@ -4,6 +4,7 @@
 
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include "Temperature.h"
 
 //Initialise Arduino to NodeMCU (5=Rx & 6=Tx)
 //UNO --> COM3
@@ -16,11 +17,30 @@ SoftwareSerial esp8266Serial(rxPin, txPin);
 // Pin donde se conecta el bus 1-Wire
 const int pinDatosDQ = 2;
 
+//datos para el relevador
+
+#define RELE_ON 0     // Activamos el rele, ponemos valor 0 ya que los reles se activan con nivel bajo o 0 por logica inversa
+#define RELE_OFF 1    // Desactivamos el rele, ponemos valor 1 ya que los reles se desactivan con nivel alto o 1 por logica inversa
+
+// definimos pin digital a tomar 
+int rele = 4;
+
+// Parpadeo del led 13
+int led_placa = 13;
+
+// variables para el manejo de la temperatura maxima y minima para el relevador
+int maxTemp = 0;
+int minTemp = 0;
+
+//TODO:
+//Temperature temperatureSensor; //recordar usar objeto
+
 OneWire oneWireObjeto(pinDatosDQ);
 DallasTemperature sensorDS18B20(&oneWireObjeto);
 
 void setup() {
-  pinMode(13, OUTPUT); // declaramos el pin 13 como salida
+  pinMode(led_placa, OUTPUT); // declaramos el pin 13 como salida
+  pinMode(rele, OUTPUT);  //configuro rele como salida
 
   Serial.begin(9600); // Iniciamos el puerto serial del Arduino UNO
   esp8266Serial.begin(9600);
@@ -63,13 +83,37 @@ void loop() {
     if (separatorIndexMax != -1 || separatorIndexMin != -1) { // devuelve -1 si no lo encuentra
       Serial.println("esta llegando");
             
-      String tempMaxIsolate = data.substring(data.length() - 2); // probando aislar maxTemp, de esta manera va hasta el final del string, retrocede 2 y toma el substring a partir de ese punto
-      Serial.println("Temperatura aislada de tempMax/Min VERSION2: " + (String)tempMaxIsolate + " C");      
+      String tempIsolate = data.substring(data.length() - 2); // probando aislar maxTemp, de esta manera va hasta el final del string, retrocede 2 y toma el substring a partir de ese punto
+      Serial.println("Temperatura aislada de tempMax/Min VERSION2: " + (String)tempIsolate + " C");
+
+      if(separatorIndexMax != -1){
+          maxTemp = tempIsolate.toInt();
+      }else{
+          minTemp = tempIsolate.toInt();
+      }
     }
   }
 
-  digitalWrite(13, LOW); //apagamos el led
+  //APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS SETEADAS
+  
+  if(sensorDS18B20.getTempCByIndex(0) > maxTemp)
+  {
+    digitalWrite(led_placa, LOW);    
+
+    digitalWrite(rele, RELE_OFF);   //envia señal alta, por logica inversa desactivo RELE
+    Serial.println("El rele se encuentra apagado");
+  }
+  
+  if(sensorDS18B20.getTempCByIndex(0) <= minTemp)
+  {
+    digitalWrite(led_placa, HIGH);    
+    
+    digitalWrite(rele, RELE_ON);  //envia señal baja, por logica inversa activo RELE
+    Serial.println("El rele se encuentra encendido"); // imprimo por consola estado del RELE
+  }
+
+  digitalWrite(led_placa, LOW); //apagamos el led
   delay(1000);
-  digitalWrite(13, HIGH); //encedemos el led
+  digitalWrite(led_placa, HIGH); //encedemos el led
   delay(2000);
 }
