@@ -29,8 +29,8 @@ int rele = 4;
 int led_placa = 13;
 
 // variables para el manejo de la temperatura maxima y minima para el relevador
-int maxTemp = 0;
-int minTemp = 0;
+int minTemp = 23;
+int maxTemp = 25;
 
 //TODO:
 //Temperature temperatureSensor; //recordar usar objeto
@@ -76,27 +76,41 @@ void loop() {
     // ver dentro del string si esta la temperatura
 
     Serial.println("Informacion del ESP8266");
-    Serial.println(actualTemperature);
+    Serial.println(data);
 
     int separatorIndexMax = data.indexOf('maxTemperature');
     int separatorIndexMin = data.indexOf('minTemperature');
     if (separatorIndexMax != -1 || separatorIndexMin != -1) { // devuelve -1 si no lo encuentra
       Serial.println("esta llegando");
+
+      //COMPROBAR correcto funcionamiento
+      int flagMax = 0;
+      if(separatorIndexMax != -1){
+        flagMax = 1;
+      }/*else{
+        int flagMin = 1;
+      }*/
             
       String tempIsolate = data.substring(data.length() - 2); // probando aislar maxTemp, de esta manera va hasta el final del string, retrocede 2 y toma el substring a partir de ese punto
       Serial.println("Temperatura aislada de tempMax/Min VERSION2: " + (String)tempIsolate + " C");
 
-      if(separatorIndexMax != -1){
-          maxTemp = tempIsolate.toInt();
+      //TODO:
+      /*falta ver la manera en la cual se puede saber si el dato que viene es la temp max o min
+      y de esa manera setear bien los datos en las variables correspondientes*/
+
+      if(flagMax){
+          maxTemp = tempIsolate.toFloat();
+          Serial.println("Seteo temperatura maxima" + (String)maxTemp + " C");
       }else{
-          minTemp = tempIsolate.toInt();
+          minTemp = tempIsolate.toFloat();
+           Serial.println("Seteo temperatura minima"  + (String)minTemp + " C");
       }
     }
   }
 
   //APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS SETEADAS
   
-  if(sensorDS18B20.getTempCByIndex(0) > maxTemp)
+  if(sensorDS18B20.getTempCByIndex(0) >= maxTemp)
   {
     digitalWrite(led_placa, LOW);    
 

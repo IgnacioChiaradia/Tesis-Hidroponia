@@ -111,6 +111,8 @@ void setMinTemperature(AsyncWebServerRequest *request) {
 
 void initServer()
 {
+Serial.println("entrando en initserver");
+  
   server.on("/LED", HTTP_POST, handleFormLed);
   server.on("/prueba", HTTP_GET, handleProof);
   server.on("/getTemperature", HTTP_GET, getTemperature);
