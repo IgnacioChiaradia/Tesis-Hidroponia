@@ -59,8 +59,6 @@ void getTemperature(AsyncWebServerRequest *request) {
 //SET TEMPERATURA MAXIMA
 void setMaxTemperature(AsyncWebServerRequest *request) {
 
-  //usar ejemplo Leo de getParam y hasParam o hasHeader y header("maxTemp")
-
   Serial.print("Mostrando tempMax pedida: ");
 
   if (request->hasParam("temperature")) {

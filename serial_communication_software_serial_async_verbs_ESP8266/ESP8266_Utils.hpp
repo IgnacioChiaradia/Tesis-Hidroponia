@@ -2,8 +2,8 @@ void connectWifi(){
 
   // el ESP8266 actuará en modo estación (STA, Station), es decir, como un dispositivo que se conecta a un punto de acceso
   WiFi.mode(WIFI_STA);
-  //Wifi connection
-  WiFi.begin(net_name, pass); 
+  //Wifi connection - cambiar conexion en caso de cambiar de wifi
+  WiFi.begin(net_name2, pass2); 
 
   Serial.print("\nConnecting wifi"); 
   

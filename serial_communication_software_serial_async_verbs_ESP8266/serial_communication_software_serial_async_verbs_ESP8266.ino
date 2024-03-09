@@ -24,6 +24,7 @@ SoftwareSerial arduinoSerial(rxPin,txPin);
 boolean state = false;
 
 AsyncWebServer server(5009);
+//AsyncWebServer server(5010);
 
 //mis archivos
 #include "config.h"  
@@ -39,7 +40,7 @@ void setup() {
 
   pinMode(ledPin, OUTPUT);
 
-  digitalWrite(ledPin, !state); // el led integrado funciona al revez
+  digitalWrite(ledPin, !state); // el led integrado funciona al revez, 0 es ON y 1 es OFF
    
   connectWifi();
   initServer();
@@ -59,7 +60,7 @@ void loop() {
     String data = arduinoSerial.readString();
     Serial.println(data);
 
-    actualTemperature = data; // PROBAR que llega
+    actualTemperature = data;
     // ver dentro del string si esta la temperatura
 
     temperatureSensor.set(data);
