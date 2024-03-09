@@ -28,10 +28,6 @@ int rele = 4;
 // Parpadeo del led 13
 int led_placa = 13;
 
-// variables para el manejo de la temperatura maxima y minima para el relevador
-int minTemp = 26;
-int maxTemp = 27;
-
 Temperature temperatureSensor; 
 
 OneWire oneWireObjeto(pinDatosDQ);
@@ -71,7 +67,6 @@ void loop() {
   // Envío de la temperatura al ESP8266, esto lo muestro en el puerto serial del ESP8266
   //esp8266Serial.println("Temperatura 8266: " + (String)temperature + " C");
   esp8266Serial.print(temperature);
-  //esp8266Serial.println("Tienequellegar");
 
   while (esp8266Serial.available()) {
     Serial.println("entrando en el while para recibir info del ESP8266 en UNO");                                                                                                                                                                                                                                                                                                                                                                    
@@ -79,47 +74,26 @@ void loop() {
     String data = esp8266Serial.readString();
     
     //probando dato fijo para setear ambas temps al mismo tiempo ///////////////////////////////////////////////////////
-    String actualTemperature = "minTemperature:20maxTemperature:27";
+    String actualTemperature = "minTemperature:20maxTemperature:26";
     data = actualTemperature;
 
     Serial.println("Informacion del ESP8266 (data)");
     Serial.println(data);
 
-    int separatorIndexMax = data.indexOf("maxTemperature");
+    int separatorIndexMax = data.indexOf("maxTemperature");// devuelve -1 si no lo encuentra
     int separatorIndexMin = data.indexOf("minTemperature");
-
-    Serial.println("Este es el indice para la temperatura MAX:" + (String)separatorIndexMax + " y este es el valor para la temp MIN: " + (String)separatorIndexMin);
-
-    /*TODO: repensar logica del siguiente IF ya que ahora siempre vienen ambas temperaturas a menos que no sea el string correcto 
-    (algo que no tenga este formato --> minTemperature:20maxTemperature:27)*/
     
-    if (separatorIndexMax != -1 || separatorIndexMin != -1) { // devuelve -1 si no lo encuentra
+    if (separatorIndexMax != -1 && separatorIndexMin != -1) {
       Serial.println("esta llegando");
-
-      int flagMax = 0;
-      if(separatorIndexMax != -1){
-        flagMax = 1;
-      }
-                  
-      String tempIsolate = data.substring(data.length() - 2); // aislamos maxTemp, de esta manera va hasta el final del string, retrocede 2 y toma el substring a partir de ese punto
-      Serial.println("Temperatura aislada de tempMax/Min VERSION2: " + (String)tempIsolate + " C");
-
-      ///////////////
 
       String tempMinReceived = data.substring(separatorIndexMax - 2, separatorIndexMax); // me posiciono para tomar la temperatura minima
       String tempMaxReceived = data.substring(data.length() - 2); //obtengo la temp max
 
       Serial.println("Esta es la info de tempMinReceived MIN:" + (String)tempMinReceived + " y esta es la info de tempMaxReceived MAX: " + (String)tempMaxReceived);
 
-      ///////////////
-
-      if(flagMax){
-          temperatureSensor.setMaxTemp(tempIsolate);
-          Serial.println("Seteo temperatura minima "  + temperatureSensor.getMaxTemp() + " C");
-      }else{
-          temperatureSensor.setMinTemp(tempIsolate);
-          Serial.println("Seteo temperatura minima "  + temperatureSensor.getMinTemp() + " C");
-      }
+      //seteamos temperatura minima y maxima      
+      temperatureSensor.setMinTemp(tempMinReceived);
+      temperatureSensor.setMaxTemp(tempMaxReceived);
     }
   }
 
