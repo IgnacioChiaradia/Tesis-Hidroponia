@@ -55,7 +55,7 @@ void loop() {
 
   // Lectura de datos enviados por el Arduino UNO
   while(arduinoSerial.available()) {
-    Serial.println("entrando en el while");
+    Serial.println("entrando en el while ESP8266");
     
     String data = arduinoSerial.readString();
     Serial.println(data);
@@ -75,5 +75,5 @@ void loop() {
   //digitalWrite(ledPin, LOW); //apagamos el led
   //delay(5000);   
   //digitalWrite(ledPin, HIGH); //encedemos el led
-  delay(2000); 
+  delay(1000); 
 }

@@ -75,8 +75,7 @@ void setMaxTemperature(AsyncWebServerRequest *request) {
 
     //ENVIO DE MAXTEMP a UNO, usamos maxTemperature como key
     arduinoSerial.print("maxTemperature:" + temperatureSensor.getMaxTemp());
-
-    //request->send(200, "application/json", "FUNCIONA el POST maxTemperature");
+    
   } else {
     request->send(400, "application/json", "Not found setMaxTemperature");
   }
