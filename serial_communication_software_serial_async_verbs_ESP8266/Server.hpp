@@ -61,56 +61,6 @@ void getTemperature(AsyncWebServerRequest *request) {
   //request->redirect("/");
 }
 
-//SET TEMPERATURA MAXIMA
-void setMaxTemperature(AsyncWebServerRequest *request) {
-
-  Serial.print("Mostrando tempMax pedida: ");
-
-  if (request->hasParam("temperature")) {
-    AsyncWebParameter* p = request->getParam("temperature");
-
-    temperatureSensor.setMaxTemp(p->value().c_str());
-    String maxTemperature = p->value().c_str();
-
-    Serial.println(maxTemperature);
-
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", maxTemperature);
-    response->addHeader("Server message", "FUNCIONA_el_POST_maxTemperature");
-    request->send(response);
-
-    //ENVIO DE MAXTEMP a UNO, usamos maxTemperature como key
-    arduinoSerial.print("maxTemperature:" + temperatureSensor.getMaxTemp());
-    
-  } else {
-    request->send(404, "application/json", "Not found setMaxTemperature");
-  }
-}
-
-//SET TEMPERATURA MINIMA
-void setMinTemperature(AsyncWebServerRequest *request) {
-
-  Serial.print("Mostrando tempMin pedida: ");
-
-  if (request->hasParam("temperature")) {
-    AsyncWebParameter* p = request->getParam("temperature");
-
-    temperatureSensor.setMinTemp(p->value().c_str());
-    String minTemperature = p->value().c_str();
-
-    Serial.println(minTemperature);
-
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", minTemperature);
-    response->addHeader("Server message", "FUNCIONA_el_POST_minTemperature");
-    request->send(response);
-
-    //ENVIO DE MINTEMP al UNO, usamos minTemperature como key
-    arduinoSerial.print("minTemperature:" + temperatureSensor.getMinTemp());
-    
-  } else {
-    request->send(404, "application/json", "Not found setMinTemperature");
-  }
-}
-
 //SET TEMPERATURA MAXIMA Y MINIMA
 void setRangeTemperature(AsyncWebServerRequest *request) {
 
@@ -147,8 +97,6 @@ Serial.println("entrando en initserver");
   server.on("/LED", HTTP_POST, handleFormLed);
   server.on("/prueba", HTTP_GET, handleProof);
   server.on("/getTemperature", HTTP_GET, getTemperature);
-  server.on("/setMaxTemperature", HTTP_POST, setMaxTemperature);
-  server.on("/setMinTemperature", HTTP_POST, setMinTemperature);
 
   server.on("/setRangeTemperature", HTTP_POST, setRangeTemperature);
 

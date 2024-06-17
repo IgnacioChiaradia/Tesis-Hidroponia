@@ -52,8 +52,6 @@ void setup() {
 
 void loop() {
  
-  //Serial.println("Entra al loop del ESP8266");
-
   // Lectura de datos enviados por el Arduino UNO
   while(arduinoSerial.available()) {
     Serial.println("entrando en el while ESP8266");
@@ -62,19 +60,18 @@ void loop() {
     Serial.println(data);
 
     actualTemperature = data;
-    // ver dentro del string si esta la temperatura
-
+    
+    // seteo la temperatura obtenida
     temperatureSensor.set(data);
 
     int separatorIndex = data.indexOf('Tienequellegar');
     if (separatorIndex != -1) {
       Serial.println("esta llegando");        
     }
-
   }    
   
-  //digitalWrite(ledPin, LOW); //apagamos el led
-  //delay(5000);   
-  //digitalWrite(ledPin, HIGH); //encedemos el led
+  digitalWrite(ledPin, LOW); //apagamos el led
+  delay(5000);   
+  digitalWrite(ledPin, HIGH); //encedemos el led
   delay(1000); 
 }
