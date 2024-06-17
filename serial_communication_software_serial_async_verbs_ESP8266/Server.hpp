@@ -46,64 +46,47 @@ void getTemperature(AsyncWebServerRequest *request) {
 
   AsyncWebServerResponse *response = request->beginResponse(200, "application/json", result);*/
 
-  //por ahora solo usamos el dato de la temperatura y lo enviamos en formato json
-  AsyncWebServerResponse *response = request->beginResponse(200, "application/json", temperatureSensor.get());
-  response->addHeader("Server message", "getTemperature");
-  request->send(response);
+  // reviso que el sensor este devolviendo una temperatura valida ya que -127.0 significa que hubo un fallo en la lectura
+  if(temperatureSensor.get() != "-127.0"){ 
+    //por ahora solo usamos el dato de la temperatura y lo enviamos en formato json
+    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", temperatureSensor.get());
+    response->addHeader("Server message", "getTemperature");
+    request->send(response);    
+  } else {
+    request->send(404, "application/json", "Not found getTemperature");
+  }
 
   //jsonBuffer.clear();
 
   //request->redirect("/");
 }
 
-//SET TEMPERATURA MAXIMA
-void setMaxTemperature(AsyncWebServerRequest *request) {
+//SET TEMPERATURA MAXIMA Y MINIMA
+void setRangeTemperature(AsyncWebServerRequest *request) {
 
-  Serial.print("Mostrando tempMax pedida: ");
+  Serial.print("Mostrando tempMin y Max pedidas: ");
 
-  if (request->hasParam("temperature")) {
-    AsyncWebParameter* p = request->getParam("temperature");
+  if (request->hasParam("minTemperature") && request->hasParam("maxTemperature")) {
+    AsyncWebParameter* tempMin = request->getParam("minTemperature");
+    AsyncWebParameter* tempMax = request->getParam("maxTemperature");
 
-    temperatureSensor.setMaxTemp(p->value().c_str());
-    String maxTemperature = p->value().c_str();
+    temperatureSensor.setMinTemp(tempMin->value().c_str());
+    String minTemperature = tempMin->value().c_str();
 
-    Serial.println(maxTemperature);
+    temperatureSensor.setMaxTemp(tempMax->value().c_str());
+    String maxTemperature = tempMax->value().c_str();
 
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", maxTemperature);
-    response->addHeader("Server message", "FUNCIONA_el_POST_maxTemperature");
+    Serial.println(minTemperature + " y " + maxTemperature);
+
+    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", "OK");
+    response->addHeader("Server message", "POST_setRangeTemperature_work");
     request->send(response);
 
-    //ENVIO DE MAXTEMP a UNO, usamos maxTemperature como key
-    arduinoSerial.print("maxTemperature:" + temperatureSensor.getMaxTemp());
-
-    //request->send(200, "application/json", "FUNCIONA el POST maxTemperature");
-  } else {
-    request->send(400, "application/json", "Not found setMaxTemperature");
-  }
-}
-
-//SET TEMPERATURA MINIMA
-void setMinTemperature(AsyncWebServerRequest *request) {
-
-  Serial.print("Mostrando tempMin pedida: ");
-
-  if (request->hasParam("temperature")) {
-    AsyncWebParameter* p = request->getParam("temperature");
-
-    temperatureSensor.setMinTemp(p->value().c_str());
-    String minTemperature = p->value().c_str();
-
-    Serial.println(minTemperature);
-
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", minTemperature);
-    response->addHeader("Server message", "FUNCIONA_el_POST_minTemperature");
-    request->send(response);
-
-    //ENVIO DE MINTEMP al UNO, usamos minTemperature como key
-    arduinoSerial.print("minTemperature:" + temperatureSensor.getMinTemp());
+    //ENVIO DE MAXTEMP y MINTEMP a UNO, usamos minTemperature y maxTemperature como keys
+    arduinoSerial.print("minTemperature:" + temperatureSensor.getMinTemp() + "maxTemperature:" + temperatureSensor.getMaxTemp());
     
   } else {
-    request->send(400, "application/json", "Not found setMinTemperature");
+    request->send(404, "application/json", "Not found setRangeTemperature");
   }
 }
 
@@ -114,8 +97,8 @@ Serial.println("entrando en initserver");
   server.on("/LED", HTTP_POST, handleFormLed);
   server.on("/prueba", HTTP_GET, handleProof);
   server.on("/getTemperature", HTTP_GET, getTemperature);
-  server.on("/setMaxTemperature", HTTP_POST, setMaxTemperature);
-  server.on("/setMinTemperature", HTTP_POST, setMinTemperature);
+
+  server.on("/setRangeTemperature", HTTP_POST, setRangeTemperature);
 
   server.onNotFound([](AsyncWebServerRequest * request) {
     request->send(400, "application/json", "Bad request");

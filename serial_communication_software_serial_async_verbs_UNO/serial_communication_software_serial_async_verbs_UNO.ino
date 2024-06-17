@@ -72,16 +72,12 @@ void loop() {
     Serial.println("entrando en el while para recibir info del ESP8266 en UNO");                                                                                                                                                                                                                                                                                                                                                                    
 
     String data = esp8266Serial.readString();
-    
-    //probando dato fijo para setear ambas temps al mismo tiempo ///////////////////////////////////////////////////////
-    String actualTemperature = "minTemperature:20maxTemperature:26";
-    data = actualTemperature;
 
     Serial.println("Informacion del ESP8266 (data)");
     Serial.println(data);
 
-    int separatorIndexMax = data.indexOf("maxTemperature");// devuelve -1 si no lo encuentra
-    int separatorIndexMin = data.indexOf("minTemperature");
+    int separatorIndexMin = data.indexOf("minTemperature");// devuelve -1 si no lo encuentra
+    int separatorIndexMax = data.indexOf("maxTemperature");
     
     if (separatorIndexMax != -1 && separatorIndexMin != -1) {
       Serial.println("esta llegando");
@@ -97,7 +93,7 @@ void loop() {
     }
   }
 
-  //APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS SETEADAS
+  /////APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS SETEADAS
   
   if(sensorDS18B20.getTempCByIndex(0) >= temperatureSensor.getMaxTemp().toFloat())
   {
@@ -109,7 +105,7 @@ void loop() {
     Serial.println("El rele se encuentra apagado");
   }
   
-  if(sensorDS18B20.getTempCByIndex(0) < temperatureSensor.getMinTemp().toFloat()) // ver si es bueno agregar un else haciendo que se apague el rele
+  if(sensorDS18B20.getTempCByIndex(0) < temperatureSensor.getMinTemp().toFloat()) 
   {
     digitalWrite(led_placa, HIGH);    
     
@@ -118,8 +114,8 @@ void loop() {
     Serial.println("La temperatura actual es menor o igual a la temp min, encendemos relevador");
     Serial.println("El rele se encuentra encendido"); // imprimo por consola estado del RELE
   }
-
-  Serial.println("temperatura maxima " + (String)temperatureSensor.getMaxTemp() + "°C y minima " + (String)temperatureSensor.getMinTemp() + "°C" );
+    
+  Serial.println("temperatura MINIMA " + (String)temperatureSensor.getMinTemp() + "°C y MAXIMA " + (String)temperatureSensor.getMaxTemp() + "°C" );
 
   digitalWrite(led_placa, LOW); //apagamos el led
   delay(1000);

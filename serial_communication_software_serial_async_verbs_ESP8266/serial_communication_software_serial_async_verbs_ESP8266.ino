@@ -1,3 +1,4 @@
+
 //ESP8266
 #include <SoftwareSerial.h>
 #include <ESP8266WiFi.h>
@@ -51,29 +52,26 @@ void setup() {
 
 void loop() {
  
-  //Serial.println("Entra al loop del ESP8266");
-
   // Lectura de datos enviados por el Arduino UNO
   while(arduinoSerial.available()) {
-    Serial.println("entrando en el while");
+    Serial.println("entrando en el while ESP8266");
     
     String data = arduinoSerial.readString();
     Serial.println(data);
 
     actualTemperature = data;
-    // ver dentro del string si esta la temperatura
-
+    
+    // seteo la temperatura obtenida
     temperatureSensor.set(data);
 
     int separatorIndex = data.indexOf('Tienequellegar');
     if (separatorIndex != -1) {
       Serial.println("esta llegando");        
     }
-
   }    
   
-  //digitalWrite(ledPin, LOW); //apagamos el led
-  //delay(5000);   
-  //digitalWrite(ledPin, HIGH); //encedemos el led
-  delay(2000); 
+  digitalWrite(ledPin, LOW); //apagamos el led
+  delay(5000);   
+  digitalWrite(ledPin, HIGH); //encedemos el led
+  delay(1000); 
 }
