@@ -70,8 +70,8 @@ void loop() {
     }
   }    
   
-  digitalWrite(ledPin, LOW); //apagamos el led
-  delay(5000);   
+  /*digitalWrite(ledPin, LOW); //apagamos el led
+  delay(1000);   
   digitalWrite(ledPin, HIGH); //encedemos el led
-  delay(1000); 
+  delay(2000); */
 }

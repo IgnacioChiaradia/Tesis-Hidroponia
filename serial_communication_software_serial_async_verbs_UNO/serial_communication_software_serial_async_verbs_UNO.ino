@@ -46,8 +46,8 @@ void setup() {
   sensorDS18B20.begin(); // seteamos el arranque del sensor
 
   //seteo valores iniciales
-  temperatureSensor.setMinTemp("26");
-  temperatureSensor.setMaxTemp("27");
+  temperatureSensor.setMinTemp("17");
+  temperatureSensor.setMaxTemp("19");
 }
 
 void loop() {
