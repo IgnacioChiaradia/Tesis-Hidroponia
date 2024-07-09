@@ -78,7 +78,7 @@ void setRangeTemperature(AsyncWebServerRequest *request) {
 
     Serial.println(minTemperature + " y " + maxTemperature);
 
-    AsyncWebServerResponse *response = request->beginResponse(200, "application/json", "OK");
+    AsyncWebServerResponse *response = request->beginResponse(200);
     response->addHeader("Server message", "POST_setRangeTemperature_work");
     request->send(response);
 

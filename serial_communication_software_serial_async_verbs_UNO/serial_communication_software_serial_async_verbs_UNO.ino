@@ -22,13 +22,13 @@ const int pinDatosDQ = 2;
 #define RELE_ON 0     // Activamos el rele, ponemos valor 0 ya que los reles se activan con nivel bajo o 0 por logica inversa
 #define RELE_OFF 1    // Desactivamos el rele, ponemos valor 1 ya que los reles se desactivan con nivel alto o 1 por logica inversa
 
-// definimos pin digital a tomar 
+// definimos pin digital a tomar
 int rele = 4;
 
 // Parpadeo del led 13
 int led_placa = 13;
 
-Temperature temperatureSensor; 
+Temperature temperatureSensor;
 
 OneWire oneWireObjeto(pinDatosDQ);
 DallasTemperature sensorDS18B20(&oneWireObjeto);
@@ -38,7 +38,7 @@ void setup() {
   pinMode(rele, OUTPUT);  //configuro rele como salida
 
   digitalWrite(led_placa, LOW);
-  digitalWrite(rele, RELE_OFF); // lo dejo asi para que el relevador comience apagado     
+  digitalWrite(rele, RELE_OFF); // lo dejo asi para que el relevador comience apagado
 
   Serial.begin(9600); // Iniciamos el puerto serial del Arduino UNO
   esp8266Serial.begin(9600);
@@ -46,8 +46,8 @@ void setup() {
   sensorDS18B20.begin(); // seteamos el arranque del sensor
 
   //seteo valores iniciales
-  temperatureSensor.setMinTemp("17");
-  temperatureSensor.setMaxTemp("19");
+  temperatureSensor.setMinTemp("18");
+  temperatureSensor.setMaxTemp("20");
 }
 
 void loop() {
@@ -69,7 +69,7 @@ void loop() {
   esp8266Serial.print(temperature);
 
   while (esp8266Serial.available()) {
-    Serial.println("entrando en el while para recibir info del ESP8266 en UNO");                                                                                                                                                                                                                                                                                                                                                                    
+    Serial.println("entrando en el while para recibir info del ESP8266 en UNO");
 
     String data = esp8266Serial.readString();
 
@@ -78,7 +78,7 @@ void loop() {
 
     int separatorIndexMin = data.indexOf("minTemperature");// devuelve -1 si no lo encuentra
     int separatorIndexMax = data.indexOf("maxTemperature");
-    
+
     if (separatorIndexMax != -1 && separatorIndexMin != -1) {
       Serial.println("esta llegando");
 
@@ -87,34 +87,53 @@ void loop() {
 
       Serial.println("Esta es la info de tempMinReceived MIN:" + (String)tempMinReceived + " y esta es la info de tempMaxReceived MAX: " + (String)tempMaxReceived);
 
-      //seteamos temperatura minima y maxima      
+      //seteamos temperatura minima y maxima
       temperatureSensor.setMinTemp(tempMinReceived);
       temperatureSensor.setMaxTemp(tempMaxReceived);
     }
   }
 
-  /////APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS SETEADAS
-  
-  if(sensorDS18B20.getTempCByIndex(0) >= temperatureSensor.getMaxTemp().toFloat())
-  {
-    digitalWrite(led_placa, LOW);    
+  // si la lectura del sensor no da error
+  if (sensorDS18B20.getTempCByIndex(0) != -127.0) {
 
-    digitalWrite(rele, RELE_OFF);   //envia señal alta, por logica inversa desactivo RELE
+    ///verifico que la temperatura actual NO sea demasiado alta y si lo es apago el relevador
+    if (sensorDS18B20.getTempCByIndex(0) >= 28) {
 
-    Serial.println("La temperatura actual es mayor o igual a la temp max, apagamos relevador");
-    Serial.println("El rele se encuentra apagado");
+      digitalWrite(rele, RELE_OFF);
+      Serial.println("Fuerzo apagado de rele por alta temperatura (28°C o mas) \n");
+      
+      ///verifico que la temperatura actual NO sea demasiado baja y si lo es enciendo el relevador
+    } else if (sensorDS18B20.getTempCByIndex(0) <= 15) {
+
+      digitalWrite(rele, RELE_ON);
+      Serial.println("Fuerzo encendido de rele por baja temperatura (15°C o menos) \n");
+    }
+    else
+    {
+      /////APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS CONFIGURADAS
+
+      if (sensorDS18B20.getTempCByIndex(0) >= temperatureSensor.getMaxTemp().toFloat()) {
+        digitalWrite(led_placa, LOW);
+
+        digitalWrite(rele, RELE_OFF);   //envia señal alta, por logica inversa desactivo RELE
+
+        Serial.println("La temperatura actual es mayor o igual a la temp max, apagamos relevador");
+        Serial.println("El rele se encuentra apagado");
+      }
+
+      if (sensorDS18B20.getTempCByIndex(0) < temperatureSensor.getMinTemp().toFloat()) {
+        digitalWrite(led_placa, HIGH);
+
+        digitalWrite(rele, RELE_ON);  //envia señal baja, por logica inversa activo RELE
+
+        Serial.println("La temperatura actual es menor o igual a la temp min, encendemos relevador");
+        Serial.println("El rele se encuentra encendido"); // imprimo por consola estado del RELE
+      }
+    }
+  } else {
+    Serial.println("Error en la lectura del sensor");
   }
-  
-  if(sensorDS18B20.getTempCByIndex(0) < temperatureSensor.getMinTemp().toFloat()) 
-  {
-    digitalWrite(led_placa, HIGH);    
-    
-    digitalWrite(rele, RELE_ON);  //envia señal baja, por logica inversa activo RELE
 
-    Serial.println("La temperatura actual es menor o igual a la temp min, encendemos relevador");
-    Serial.println("El rele se encuentra encendido"); // imprimo por consola estado del RELE
-  }
-    
   Serial.println("temperatura MINIMA " + (String)temperatureSensor.getMinTemp() + "°C y MAXIMA " + (String)temperatureSensor.getMaxTemp() + "°C" );
 
   digitalWrite(led_placa, LOW); //apagamos el led
