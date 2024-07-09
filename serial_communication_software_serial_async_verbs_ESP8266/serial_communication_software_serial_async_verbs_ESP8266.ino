@@ -2,8 +2,6 @@
 //ESP8266
 #include <SoftwareSerial.h>
 #include <ESP8266WiFi.h>
-//#include <ESPAsyncTCP.h>
-//#include <ESPAsyncWebSrv.h>
 #include <ESPAsyncWebServer.h>
 
 String actualTemperature;
@@ -38,6 +36,7 @@ const int ledPin = 2;
 void setup() {  
   Serial.begin(9600); // Configura la comunicación serial a 9600 baudios e iniciamos el puerto del ESP8266
   arduinoSerial.begin(9600); // Iniciamos el puerto virtual para la comunicación con el arduino UNO
+  WiFiClient wifiClient;
 
   pinMode(ledPin, OUTPUT);
 
@@ -69,7 +68,7 @@ void loop() {
       Serial.println("esta llegando");        
     }
   }    
-  
+ 
   /*digitalWrite(ledPin, LOW); //apagamos el led
   delay(1000);   
   digitalWrite(ledPin, HIGH); //encedemos el led
