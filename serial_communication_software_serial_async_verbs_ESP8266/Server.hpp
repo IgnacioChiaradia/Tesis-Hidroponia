@@ -1,7 +1,6 @@
 #include "Temperature.h"
-#include <ArduinoJson.h>
 
-// esta variable se usa para guardar desde el main y la devolvemos en la response desde aca
+// esta variable se usa para guardar desde el main y la devolvemos en la response desde aqui
 Temperature temperatureSensor;
 
 void handleFormLed(AsyncWebServerRequest *request)
@@ -29,23 +28,6 @@ void handleProof(AsyncWebServerRequest *request)
 
 void getTemperature(AsyncWebServerRequest *request) {
 
-  Serial.print("Recuperando temperatura actual:\t");
-  Serial.println(temperatureSensor.get());
-
-  //Crear un objeto JSON, usamos StaticJsonDocument ya que el documento es pequeño
-  /*const int capacity = JSON_OBJECT_SIZE(3);
-  StaticJsonDocument<capacity> jsonDoc;
-
-  // Agregar datos al objeto JSON
-  jsonDoc["nombre"] = "TempActual";
-  jsonDoc["valor"] = temperatureSensor.get();
-
-  // Declare un buffer para contener el resultado
-  char result[128];
-  serializeJsonPretty(jsonDoc, result);
-
-  AsyncWebServerResponse *response = request->beginResponse(200, "application/json", result);*/
-
   // reviso que el sensor este devolviendo una temperatura valida ya que -127.0 significa que hubo un fallo en la lectura
   if(temperatureSensor.get() != "-127.0"){ 
     //por ahora solo usamos el dato de la temperatura y lo enviamos en formato json
@@ -55,10 +37,6 @@ void getTemperature(AsyncWebServerRequest *request) {
   } else {
     request->send(404, "application/json", "Not found getTemperature");
   }
-
-  //jsonBuffer.clear();
-
-  //request->redirect("/");
 }
 
 //SET TEMPERATURA MAXIMA Y MINIMA
