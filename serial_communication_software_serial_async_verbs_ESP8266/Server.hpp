@@ -3,29 +3,6 @@
 // esta variable se usa para guardar desde el main y la devolvemos en la response desde aqui
 Temperature temperatureSensor;
 
-void handleFormLed(AsyncWebServerRequest *request)
-{
-  String ledStatus = request->arg("status");
-
-  Serial.print("Status:\t");
-  Serial.println(ledStatus);
-
-  digitalWrite(LED_BUILTIN, ledStatus == "ON" ? LOW : HIGH);
-
-  AsyncWebServerResponse *response = request->beginResponse(200, "application/json", "Hello World!");
-  response->addHeader("Server", "ESP Async Web Server");
-  request->send(response);
-
-  request->redirect("/");
-}
-
-void handleProof(AsyncWebServerRequest *request)
-{
-  Serial.print("Entra a handleProof\t");
-
-  request->send(200, "application/json", "Funciona el GET");
-}
-
 void getTemperature(AsyncWebServerRequest *request) {
 
   // reviso que el sensor este devolviendo una temperatura valida ya que -127.0 significa que hubo un fallo en la lectura
@@ -60,7 +37,7 @@ void setRangeTemperature(AsyncWebServerRequest *request) {
     response->addHeader("Server message", "POST_setRangeTemperature_work");
     request->send(response);
 
-    //ENVIO DE MAXTEMP y MINTEMP a UNO, usamos minTemperature y maxTemperature como keys
+    //ENVIO DE MAXTEMP y MINTEMP a UNO, usamos minTemperature y maxTemperature como keys 
     arduinoSerial.print("minTemperature:" + temperatureSensor.getMinTemp() + "maxTemperature:" + temperatureSensor.getMaxTemp());
     
   } else {
@@ -71,11 +48,11 @@ void setRangeTemperature(AsyncWebServerRequest *request) {
 void initServer()
 {
 Serial.println("entrando en initserver");
-  
-  server.on("/LED", HTTP_POST, handleFormLed);
-  server.on("/prueba", HTTP_GET, handleProof);
+
+  //GET
   server.on("/getTemperature", HTTP_GET, getTemperature);
 
+  //POST
   server.on("/setRangeTemperature", HTTP_POST, setRangeTemperature);
 
   server.onNotFound([](AsyncWebServerRequest * request) {

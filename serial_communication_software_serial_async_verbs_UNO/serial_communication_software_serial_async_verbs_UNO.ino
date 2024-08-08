@@ -26,7 +26,16 @@ const int PIN_DATOS_DQ = 2;
 #define RELE 4
 
 // Parpadeo del led 13
-const int LED_PLACA = 13;
+const int BOARD_LED = 13;
+
+//ELEMENTOS DEL SENSOR DE ULTRASONIDO HC-SR04
+// Configuramos los pines del sensor trig y Echo
+const int PINTRIG = 13;
+const int PINECHO = 12;
+ 
+// Constante velocidad sonido en cm/s
+const float SOUNDSPEED = 34000.0;
+float distance;
 
 Temperature temperatureSensor;
 
@@ -34,16 +43,19 @@ OneWire oneWireObjeto(PIN_DATOS_DQ);
 DallasTemperature sensorDS18B20(&oneWireObjeto);
 
 void setup() {
-  pinMode(LED_PLACA, OUTPUT); // declaramos el pin 13 como salida
+  pinMode(BOARD_LED, OUTPUT); // declaramos el pin 13 como salida
   pinMode(RELE, OUTPUT);  //configuro rele como salida
 
-  digitalWrite(LED_PLACA, LOW);
+  digitalWrite(BOARD_LED, LOW);
   digitalWrite(RELE, RELE_OFF); // lo dejo asi para que el relevador comience apagado
 
   Serial.begin(9600); // Iniciamos el puerto serial del Arduino UNO
   esp8266Serial.begin(9600); //Iniciamos la comunicacion con el ESP8266
 
   sensorDS18B20.begin(); // seteamos el arranque del sensor
+
+  pinMode(PINTRIG, OUTPUT); // Ponemos el pin Trig en modo salida
+  pinMode(PINECHO, INPUT); // Ponemos el pin Echo en modo entrada  
 
   //seteo valores por defecto
   temperatureSensor.setMinTemp("18");
@@ -83,10 +95,10 @@ void loop() {
   Serial.print(temperature);
   Serial.println(" C");
   Serial.println();
-  Serial.println();
+  Serial.println();  
 
   // Envío de la temperatura al ESP8266, esto lo muestro en el puerto serial del ESP8266
-  //esp8266Serial.println("Temperatura 8266: " + (String)temperature + " C");
+  //esp8266Serial.println("Temperatura 8266: " + (String)temperature + " C");  
   esp8266Serial.print(temperature);
 
   while (esp8266Serial.available()) {
@@ -114,51 +126,87 @@ void loop() {
     }
   }
 
-  // si la lectura del sensor no da error
-  if (sensorDS18B20.getTempCByIndex(0) != -127.0) {
+  /*SENSOR DE ULTRASONIDO*/
+  initTrig();
+  
+  // La función pulseIn obtiene el tiempo que tarda en cambiar entre estados, en este caso a HIGH
+  unsigned long timePulse = pulseIn(PINECHO, HIGH);
+  
+  // Obtenemos la distancia en cm, hay que convertir el tiempo en segudos ya que está en microsegundos
+  // por eso se multiplica por 0.000001
+  distance = timePulse * 0.000001 * SOUNDSPEED / 2.0;
+  Serial.print(distance);
+  Serial.print("cm");
+  Serial.println();
 
-    ///verifico que la temperatura actual NO sea demasiado alta y si lo es apago el relevador
-    if (sensorDS18B20.getTempCByIndex(0) >= 28) {
+  /*FIN SENSOR DE ULTRASONIDO*/
 
-      digitalWrite(RELE, RELE_OFF);
-      Serial.println("Fuerzo apagado de rele por alta temperatura (28°C o mas) \n");
-      
-      ///verifico que la temperatura actual NO sea demasiado baja y si lo es enciendo el relevador
-    } else if (sensorDS18B20.getTempCByIndex(0) <= 15) {
-
-      digitalWrite(RELE, RELE_ON);
-      Serial.println("Fuerzo encendido de rele por baja temperatura (15°C o menos) \n");
-    }
-    else
-    {
-      /////APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS CONFIGURADAS
-
-      if (sensorDS18B20.getTempCByIndex(0) >= temperatureSensor.getMaxTemp().toFloat()) {
-        digitalWrite(LED_PLACA, LOW);
-
-        digitalWrite(RELE, RELE_OFF);   //envia señal alta, por logica inversa desactivo RELE
-
-        Serial.println("La temperatura actual es mayor o igual a la temp max, apagamos relevador");
-        Serial.println("El rele se encuentra apagado");
+  //si la distancia indica que es menor a 5 es que hay agua suficiente en el deposito de agua para que sea seguro calentarla
+  //debe ser mayor a 0 para que se de por entendido que el sensor esta funcionando bien
+  if(distance <= 5.00 && distance >= 0.00)
+  {
+    // si la lectura del sensor no da error
+    if (sensorDS18B20.getTempCByIndex(0) != -127.0) {
+  
+      ///verifico que la temperatura actual NO sea demasiado alta y si lo es apago el relevador
+      if (sensorDS18B20.getTempCByIndex(0) >= 28) {
+  
+        digitalWrite(RELE, RELE_OFF);
+        Serial.println("Fuerzo apagado de rele por alta temperatura (28°C o mas) \n");
+        
+        ///verifico que la temperatura actual NO sea demasiado baja y si lo es enciendo el relevador
+      } else if (sensorDS18B20.getTempCByIndex(0) <= 15) {
+  
+        digitalWrite(RELE, RELE_ON);
+        Serial.println("Fuerzo encendido de rele por baja temperatura (15°C o menos) \n");
       }
-
-      if (sensorDS18B20.getTempCByIndex(0) < temperatureSensor.getMinTemp().toFloat()) {
-        digitalWrite(LED_PLACA, HIGH);
-
-        digitalWrite(RELE, RELE_ON);  //envia señal baja, por logica inversa activo RELE
-
-        Serial.println("La temperatura actual es menor o igual a la temp min, encendemos relevador");
-        Serial.println("El rele se encuentra encendido"); // imprimo por consola estado del RELE
+      else
+      {
+        /////APAGAMOS O ENCENDEMOS EL RELEVADOR DEPENDIENDO DE LA TEMPERATURAS CONFIGURADAS
+  
+        if (sensorDS18B20.getTempCByIndex(0) >= temperatureSensor.getMaxTemp().toFloat()) {
+          digitalWrite(BOARD_LED, LOW);
+  
+          digitalWrite(RELE, RELE_OFF);   //envia señal alta, por logica inversa desactivo RELE
+  
+          Serial.println("La temperatura actual es mayor o igual a la temp max, apagamos relevador");
+          Serial.println("El rele se encuentra apagado");
+        }
+  
+        if (sensorDS18B20.getTempCByIndex(0) < temperatureSensor.getMinTemp().toFloat()) {
+          digitalWrite(BOARD_LED, HIGH);
+  
+          digitalWrite(RELE, RELE_ON);  //envia señal baja, por logica inversa activo RELE
+  
+          Serial.println("La temperatura actual es menor o igual a la temp min, encendemos relevador");
+          Serial.println("El rele se encuentra encendido"); // imprimo por consola estado del RELE
+        }
       }
+    } else {
+      Serial.println("Error en la lectura del sensor");
     }
   } else {
-    Serial.println("Error en la lectura del sensor");
+    digitalWrite(BOARD_LED, LOW);
+    digitalWrite(RELE, RELE_OFF);
+    Serial.println("FALTANTE DE AGUA, RELE APAGADO");
   }
 
   Serial.println("temperatura MINIMA " + (String)temperatureSensor.getMinTemp() + "°C y MAXIMA " + (String)temperatureSensor.getMaxTemp() + "°C" );
 
-  digitalWrite(LED_PLACA, LOW); //apagamos el led
-  delay(1000);
-  digitalWrite(LED_PLACA, HIGH); //encedemos el led
-  delay(2000);
+  delay(3000);
+}
+
+// Método que inicia la secuencia del trigger para comenzar a medir
+void initTrig()
+{
+  // Ponemos el trig en estado bajo y esperamos 2 ms
+  digitalWrite(PINTRIG, LOW);
+  delayMicroseconds(2);
+  
+  // Ponemos el pin Trig a estado alto y esperamos 10 ms
+  digitalWrite(PINTRIG, HIGH);
+  delayMicroseconds(10);
+  
+  // Comenzamos poniendo el pin trig en estado bajo
+  digitalWrite(PINTRIG, LOW);
 }

@@ -13,10 +13,6 @@
 
 String actualTemperature;
 
-//iniciar cliente
-/*HTTPClient http;
-WiFiClient wifiClient;*/
-
 ////////////////conexion serial//////////////
 //D6 = Rx & D5 = Tx
 //ESP --> COM4
@@ -88,9 +84,4 @@ void loop() {
       temperatureSensor.set(data);
     }
   }
-
-  /*digitalWrite(LED_PIN, LOW); //apagamos el led
-    delay(1000);
-    digitalWrite(LED_PIN, HIGH); //encedemos el led
-    delay(2000); */
 }
